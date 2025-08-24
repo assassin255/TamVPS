@@ -67,7 +67,8 @@ CMD bash -c '\
         -accel tcg,thread=multi,tb-size=34388608,split-wx=on \
         -rtc clock=host,base=utc \
         -boot order=d,menu=on; \
-    \
+        -daemonize \
+    
     echo "[+] Port 5900 Pinggy.io..."; \
     ssh -p 443 -R0:localhost:5900 -o StrictHostKeyChecking=no -o ServerAliveInterval=30 lVuaQjAzw82+tcp@free.pinggy.io; \
     
