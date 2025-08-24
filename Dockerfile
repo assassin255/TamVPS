@@ -32,8 +32,10 @@ RUN curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
 # =============================
 # Tải ISO Windows + Virtio
 # =============================
-RUN wget -O /win.iso "https://archive.org/download/windows-10-lite-edition-19h2-x64/Windows%2010%20Lite%20Edition%2019H2%20x64.iso" && \
-    wget -O /virtio.iso "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.271-1/virtio-win-0.1.271.iso"
+RUN echo "[+] Đang tải Windows ISO..."; \
+    wget -O /win.iso "https://archive.org/download/windows-10-lite-edition-19h2-x64/Windows%2010%20Lite%20Edition%2019H2%20x64.iso" --progress=dot:giga; \
+    echo "[+] Đang tải Virtio ISO..."; \
+    wget -O /virtio.iso "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.271-1/virtio-win-0.1.271.iso" --progress=dot:giga
 
 # =============================
 # Tạo ổ cứng qcow2
@@ -46,31 +48,28 @@ RUN qemu-img create -f qcow2 /disk.qcow2 50G
 CMD bash -c '\
     echo "[+] Khởi động QEMU Windows..."; \
     qemu-system-x86_64 \
-    -M q35,nvdimm=on,hmat=on \
-    -usb -device usb-tablet -device usb-kbd \
-    -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+aes,+xsave,+xsaveopt,+xsavec,+xgetbv1,+avx,+avx2,+fma,+fma4,+popcnt,+cx16,+mmx,+sse,+sse2,+x2apic,+lahf_lm,+rdrand \
-    -smp sockets=1,cores=8,threads=1 \
-    -object memory-backend-memfd,id=mem,size=8192M,share=on,prealloc=on \
-    -m 8192 -mem-prealloc -machine memory-backend=mem \
-    -drive file=/disk.qcow2,if=none,format=qcow2,cache=unsafe,aio=threads,discard=on,id=hd0 \
-    -device virtio-blk-pci,drive=hd0 \
-    -drive file=/win.iso,media=cdrom,if=none,id=cdrom0 \
-    -device ahci,id=ahci0 \
-    -device ide-cd,drive=cdrom0,bus=ahci0.0 \
-    -drive file=/virtio.iso,media=cdrom,if=none,id=cdrom1 \
-    -device ide-cd,drive=cdrom1,bus=ahci0.1 \
-    -device qxl-vga,vgamem_mb=2048,ram_size=268435456,vram_size=268435456 \
-    -device virtio-balloon,id=balloon0 \
-    -display vnc=:0 \
-    -netdev user,id=n0,hostfwd=tcp::5900-:5900,restrict=off -device virtio-net-pci,netdev=n0 \
-    -accel tcg,thread=multi,tb-size=34388608,split-wx=on \
-    -no-hpet \
-    -rtc clock=host,base=utc \
-    -boot order=d,menu=on \
-    -daemonize; \
+        -M q35,hpet=off,nvdimm=on,hmat=on \
+        -usb -device usb-tablet -device usb-kbd \
+        -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+aes,+xsave,+xsaveopt,+xsavec,+xgetbv1,+avx,+avx2,+fma,+fma4,+popcnt,+cx16,+mmx,+sse,+sse2,+x2apic,+lahf_lm,+rdrand \
+        -smp sockets=1,cores=2,threads=1 \
+        -m 1024 \
+        -drive file=/disk.qcow2,if=none,format=qcow2,cache=unsafe,aio=threads,discard=on,id=hd0 \
+        -device virtio-blk-pci,drive=hd0 \
+        -drive file=/win.iso,media=cdrom,if=none,id=cdrom0 \
+        -device ahci,id=ahci0 \
+        -device ide-cd,drive=cdrom0,bus=ahci0.0 \
+        -drive file=/virtio.iso,media=cdrom,if=none,id=cdrom1 \
+        -device ide-cd,drive=cdrom1,bus=ahci0.1 \
+        -device qxl-vga,vgamem_mb=512 \
+        -device virtio-balloon,id=balloon0 \
+        -display vnc=:0 \
+        -netdev user,id=n0,hostfwd=tcp::5900-:5900,restrict=off -device virtio-net-pci,netdev=n0 \
+        -accel tcg,thread=multi,tb-size=34388608,split-wx=on \
+        -rtc clock=host,base=utc \
+        -boot order=d,menu=on; \
     \
     echo "[+] Thêm ngrok authtoken..."; \
-    ngrok config add-authtoken 2ww60Uf9irvEr2KylKE2P5ASMGw_2Mer1U56aKeQsqVK5Mczs; \
+    ngrok config add-authtoken ${NGROK_AUTHTOKEN:-YOUR_TOKEN_HERE}; \
     \
     echo "[+] Khởi chạy ngrok TCP 5900 (VNC)..."; \
     ngrok tcp 5900 > /tmp/ngrok.log & \
