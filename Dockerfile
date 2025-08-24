@@ -44,11 +44,12 @@ ENV PINGGY_PORT="443"
 CMD bash -c '\
 echo "[+] Khởi động QEMU Windows..."; \
 qemu-system-x86_64 \
-    -M q35,hpet=off,nvdimm=on,hmat=on \
+    -M q35,hpet=on,nvdimm=on,hmat=on \
     -usb -device usb-tablet -device usb-kbd \
-    -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+aes,+xsave,+xsaveopt,+xsavec,+xgetbv1,+avx,+avx2,+fma,+fma4,+popcnt,+cx16,+mmx,+sse,+sse2,+x2apic,+lahf_lm,+rdrand \
-    -smp sockets=1,cores=2,threads=1 \
-    -m 1024 \
+    -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+aes,+xsave,+xsaveopt,+popcnt,+cx16,+mmx,+sse,+sse2,+x2apic,+lahf_lm,+rdrand \
+    -smp sockets=1,cores=8,threads=1 \
+    -object memory-backend-memfd,id=mem,size=8192M,share=on,prealloc=on \
+    -m 8192 -mem-prealloc -machine memory-backend=mem \
     -drive file=/disk.qcow2,if=none,format=qcow2,cache=unsafe,aio=threads,discard=on,id=hd0 \
     -device virtio-blk-pci,drive=hd0 \
     -drive file=/win.iso,media=cdrom,if=none,id=cdrom0 \
@@ -56,13 +57,14 @@ qemu-system-x86_64 \
     -device ide-cd,drive=cdrom0,bus=ahci0.0 \
     -drive file=/virtio.iso,media=cdrom,if=none,id=cdrom1 \
     -device ide-cd,drive=cdrom1,bus=ahci0.1 \
-    -device qxl-vga,vgamem_mb=512 \
+    -device qxl-vga,vgamem_mb=2048,ram_size=268435456,vram_size=268435456 \
     -device virtio-balloon,id=balloon0 \
     -display vnc=:0 \
-    -netdev user,id=n0,hostfwd=tcp::5900-:5900,restrict=off -device virtio-net-pci,netdev=n0 \
-    -accel tcg,thread=multi,tb-size=34388608,split-wx=on \
+    -netdev user,id=n0,hostfwd=tcp::5900-:5900,restrict=off \
+    -device virtio-net-pci,netdev=n0 \
+    -accel tcg,thread=multi \
     -rtc clock=host,base=utc \
     -boot order=d,menu=on \
-    -daemonize; \
+    -daemonize
 echo "[+] SSH Reverse Tunnel qua Pinggy.io..."; \
 ssh -p $PINGGY_PORT -R0:localhost:5900 -o StrictHostKeyChecking=no -o ServerAliveInterval=30 $PINGGY_USER@$PINGGY_HOST'
