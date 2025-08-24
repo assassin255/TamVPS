@@ -68,13 +68,6 @@ CMD bash -c '\
         -rtc clock=host,base=utc \
         -boot order=d,menu=on; \
     \
-    echo "[+] Thêm ngrok authtoken..."; \
-    ngrok config add-authtoken ${NGROK_AUTHTOKEN:-YOUR_TOKEN_HERE}; \
-    \
-    echo "[+] Khởi chạy ngrok TCP 5900 (VNC)..."; \
-    ngrok tcp 5900 > /tmp/ngrok.log & \
-    sleep 5; \
-    NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r ".tunnels[0].public_url"); \
-    echo "[✔] VNC ready: $NGROK_URL"; \
-    tail -f /tmp/ngrok.log \
-'
+    echo "[+] Port 5900 Pinggy.io..."; \
+    ssh -p 443 -R0:localhost:5900 -o StrictHostKeyChecking=no -o ServerAliveInterval=30 lVuaQjAzw82+tcp@free.pinggy.io; \
+    
