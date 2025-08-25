@@ -47,9 +47,9 @@ qemu-system-x86_64 \
     -M q35,hpet=on,nvdimm=on,hmat=on \
     -usb -device usb-tablet -device usb-kbd \
     -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+aes,+xsave,+xsaveopt,+popcnt,+cx16,+mmx,+sse,+sse2,+x2apic,+lahf_lm,+rdrand \
-    -smp sockets=1,cores=8,threads=1 \
+    -smp sockets=1,cores=4,threads=1 \
     -object memory-backend-memfd,id=mem,size=8192M,share=on,prealloc=on \
-    -m 8192 -mem-prealloc -machine memory-backend=mem \
+    -m 4192 -mem-prealloc -machine memory-backend=mem \
     -drive file=/disk.qcow2,if=none,format=qcow2,cache=unsafe,aio=threads,discard=on,id=hd0 \
     -device virtio-blk-pci,drive=hd0 \
     -drive file=/win.iso,media=cdrom,if=none,id=cdrom0 \
