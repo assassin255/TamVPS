@@ -32,13 +32,6 @@ RUN echo "[+] Đang tải Windows ISO..."; \
 RUN qemu-img create -f qcow2 /disk.qcow2 50G
 
 # =============================
-# SSH Reverse Tunnel biến môi trường
-# =============================
-ENV PINGGY_USER="lVuaQjAzw82+tcp"
-ENV PINGGY_HOST="free.pinggy.io"
-ENV PINGGY_PORT="443"
-
-# =============================
 # CMD chạy QEMU + SSH reverse
 # =============================
 CMD bash -c '\
