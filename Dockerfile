@@ -21,9 +21,7 @@ RUN apt update && apt upgrade -y && apt install -y \
 # =============================
 # Tải ISO Windows + Virtio
 # =============================
-RUN echo "[+] Đang tải Windows ISO..."; \
-    wget -O /win.iso "https://archive.org/download/windows-10-lite-edition-19h2-x64/Windows%2010%20Lite%20Edition%2019H2%20x64.iso" --progress=dot:giga; \
-    echo "[+] Đang tải Virtio ISO..."; \
+RUN wget -O /win.iso "https://archive.org/download/windows-10-lite-edition-19h2-x64/Windows%2010%20Lite%20Edition%2019H2%20x64.iso" --progress=dot:giga && \
     wget -O /virtio.iso "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.271-1/virtio-win-0.1.271.iso" --progress=dot:giga
 
 # =============================
@@ -34,8 +32,8 @@ RUN qemu-img create -f qcow2 /disk.qcow2 50G
 # =============================
 # CMD chạy QEMU + SSH reverse
 # =============================
-CMD bash -c '\
-echo "[+] Khởi động QEMU Windows..."; \
+CMD bash -c "\
+echo '[+] Khởi động QEMU Windows...'; \
 qemu-system-x86_64 \
     -M q35,hpet=on,nvdimm=on,hmat=on \
     -usb -device usb-tablet -device usb-kbd \
@@ -57,7 +55,6 @@ qemu-system-x86_64 \
     -device virtio-net-pci,netdev=n0 \
     -accel tcg,thread=multi \
     -rtc clock=host,base=utc \
-    -boot order=d,menu=on \
-    -daemonize
-echo "[+] SSH Reverse Tunnel qua Pinggy.io..."; \
-ssh -p $PINGGY_PORT -R0:localhost:5900 -o StrictHostKeyChecking=no -o ServerAliveInterval=30 $PINGGY_USER@$PINGGY_HOST'
+    -boot order=d,menu=on; \
+echo '[+] SSH Reverse Tunnel qua Pinggy.io...'; \
+ssh -p \$PINGGY_PORT -R0:localhost:5900 -o StrictHostKeyChecking=no -o ServerAliveInterval=30 \$PINGGY_USER@\$PINGGY_HOST"
