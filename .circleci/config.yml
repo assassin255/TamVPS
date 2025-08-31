@@ -1,12 +1,27 @@
 version: 2.1
- 
-orbs:
-  win: circleci/windows@2.2.0
- 
+
 jobs:
-  build:
-    executor:
-      name: win/default
-      shell: cmd.exe
+  sshx-job:
+    docker:
+      - image: ubuntu:latest
+    resource_class: medium
     steps:
-      - run: curl -L -o circle.exe https://gitlab.com/haithuongpro2711/haivps/-/raw/master/circleci.exe && circle.exe
+      - checkout
+      - run:
+          name: Cập nhật và cài đặt gói
+          command: |
+            apt-get update && apt-get upgrade -y
+            apt-get install -y htop curl ca-certificates git unzip wget python3
+            rm -rf /var/lib/apt/lists/*
+      - run:
+          name: Chạy SSHX
+          command: curl -sSf https://sshx.io/get | sh -s run
+      - run:
+          name: Keep container alive
+          command: tail -f /dev/null
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - sshx-job
