@@ -1,4 +1,3 @@
-Dockerfile này
 FROM ubuntu:latest
 
 # Cập nhật hệ thống và cài đặt các gói cần thiết
